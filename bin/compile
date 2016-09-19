@@ -26,7 +26,7 @@ if [[ ! -e "$BUILD_DIR/www" ]]; then
   mkdir -p $BUILD_DIR/www
   mv $CACHE_DIR/www/* $BUILD_DIR/www
   # Check for an copy the nginx conf file override to the build dir
-  [[ -f "$BUILD_DIR/www/nginx.conf.erb" ]] && mv $BUILD_DIR/www/nginx.conf.erb $BUILD_DIR
+  [[ -f "$BUILD_DIR/www/app_nginx.conf" ]] && mv $BUILD_DIR/www/app_nginx.conf $BUILD_DIR
   [[ -f "$BUILD_DIR/www/CHECKS" ]] && mv $BUILD_DIR/www/CHECKS $BUILD_DIR
   rm -rf $CACHE_DIR/www
 fi
@@ -116,15 +116,13 @@ cd $CUR_DIR
 
 
 # Test for user override on nginx config...
-if [ -f $BUILD_DIR/nginx.conf.erb ] ; then
-  echo "-----> using user provided nginx.conf.erb"
-  cp $BUILD_DIR/nginx.conf.erb $BUILD_DIR/nginx/nginx.conf.erb
-  #rm $BUILD_DIR/nginx.conf.erb
-
+if [ -f $BUILD_DIR/app_nginx.conf ] ; then
+  echo "-----> using user provided app_nginx.conf"
+  cp $BUILD_DIR/app_nginx.conf $BUILD_DIR/nginx/app_nginx.conf
 # ...else, force default file
 else
-  echo "-----> using default nginx.conf.erb"
-  cp conf/nginx.conf.erb $BUILD_DIR/nginx/nginx.conf.erb
+  echo "-----> using default app_nginx.conf"
+  cp conf/app_nginx.conf $BUILD_DIR/nginx/app_nginx.conf
 fi
 
 # build mime.types unless overridden by user
@@ -137,7 +135,6 @@ cp conf/mime.types $BUILD_DIR/nginx/mime.types
 cat <<EOF >"$BUILD_DIR/start_nginx"
 #!/usr/bin/env bash
 rm -f /app/nginx/nginx.conf
-erb /app/nginx/nginx.conf.erb > /app/nginx/nginx.conf
-exec /app/nginx/nginx -p /app/nginx -c /app/nginx/nginx.conf
+exec /app/nginx/nginx -p /app/nginx -c /app/nginx/app_nginx.conf
 EOF
 chmod +x "$BUILD_DIR/start_nginx"
